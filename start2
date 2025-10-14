@@ -1,0 +1,59 @@
+#!/bin/bash
+clear
+echo "=========================================="
+echo " 🚀 Telegram GitHub Bot Installer (Termux)"
+echo "=========================================="
+
+# Cek apakah sedang di Termux
+if [ "$(uname -o)" != "Android" ]; then
+    echo "⚠️ Script ini disarankan untuk dijalankan di Termux!"
+fi
+
+# Install dependencies
+echo "📦 Menginstall dependensi..."
+pkg update -y >/dev/null 2>&1
+pkg install -y nodejs npm curl wget git >/dev/null 2>&1
+
+# Input konfigurasi
+read -p "Masukkan BOT_TOKEN: " BOT_TOKEN
+read -p "Masukkan GITHUB_TOKEN: " GITHUB_TOKEN
+read -p "Masukkan GITHUB_USERNAME: " GITHUB_USERNAME
+read -p "Masukkan GITHUB_REPO: " GITHUB_REPO
+read -p "Masukkan GITHUB_FILE_PATH : " GITHUB_FILE_PATH
+read -p "Masukkan ADMIN_ID : " ADMIN_ID
+read -p "Masukkan DATA_QRIS (misal: link atau data file qris): " DATA_QRIS
+
+# Siapkan direktori
+BOTDIR=$HOME/botenv
+mkdir -p $BOTDIR
+cd $BOTDIR
+
+echo "📂 Menyiapkan environment di $BOTDIR"
+npm init -y >/dev/null 2>&1
+npm install node-telegram-bot-api dotenv axios >/dev/null 2>&1
+
+# Unduh file bot
+echo "⬇️ Mengunduh bot.js..."
+wget -O $BOTDIR/bot.js "https://raw.githubusercontent.com/al-isdar/xtrbut/main/bot.js" -q
+
+# Buat file .env
+echo "🧾 Membuat file .env..."
+cat > $BOTDIR/.env <<EOF
+BOT_TOKEN=${BOT_TOKEN}
+GITHUB_TOKEN=${GITHUB_TOKEN}
+GITHUB_USERNAME=${GITHUB_USERNAME}
+GITHUB_REPO=${GITHUB_REPO}
+GITHUB_FILE_PATH=${GITHUB_FILE_PATH}
+ADMIN_ID=${ADMIN_ID}
+DATA_QRIS=${DATA_QRIS}
+EOF
+
+# Jalankan bot langsung
+echo "🚀 Menjalankan bot..."
+node bot.js
+
+echo ""
+echo "✅ Kalau mau biar bot jalan terus (auto-restart), install pm2:"
+echo "   npm install -g pm2"
+echo "   pm2 start $BOTDIR/bot.js --name githubbot"
+echo "   pm2 save && pm2 startup"
