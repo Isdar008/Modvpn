@@ -1,44 +1,47 @@
-// File: api/webhook/pakasir.js
+// api/webhook/pakasir.js  (CommonJS - cepat)
+const axios = require('axios');
 
-import axios from 'axios';
+const VPS_INTERNAL_WEBHOOK_URL = process.env.VPS_INTERNAL_WEBHOOK_URL || 'http://41.216.178.185:50123/webhook/pakasir';
+const PAKASIR_FORWARD_SECRET = process.env.PAKASIR_FORWARD_SECRET || 'joytun0018272727Shdha';
 
-// Ganti dengan IP Public VPS Anda dan PORT Express (50123)
-// Pastikan Anda juga memasukkan Secret Key yang sama persis di sini!
-const VPS_INTERNAL_WEBHOOK_URL = 'http://41.216.178.185:50123/webhook/pakasir';
-const PAKASIR_FORWARD_SECRET = "joytun0018272727Shdha"; // <--- HARUS SAMA DENGAN DI app.js
+module.exports = async function handler(request, response) {
+  if (request.method !== 'POST') {
+    return response.status(405).json({
+      success: false,
+      message: 'Metode tidak diizinkan. Hanya POST yang diterima.'
+    });
+  }
 
-export default async function handler(request, response) {
-    if (request.method !== 'POST') {
-        return response.status(405).json({ 
-            success: false, 
-            message: 'Metode tidak diizinkan. Hanya POST yang diterima.' 
-        });
+  try {
+    const payload = request.body;
+    console.log('--- Webhook Diterima dari Pakasir ---');
+    console.log('Payload Lengkap:', JSON.stringify(payload).slice(0, 1000));
+
+    // forward dengan timeout dan header
+    const res = await axios.post(VPS_INTERNAL_WEBHOOK_URL, payload, {
+      headers: { 'Authorization': `Bearer ${PAKASIR_FORWARD_SECRET}` },
+      timeout: 8000
+    });
+
+    console.log('Forwarded to VPS, status:', res.status);
+
+    return response.status(200).json({
+      success: true,
+      message: 'Webhook diterima dan diteruskan ke bot VPS dengan sukses.'
+    });
+  } catch (error) {
+    // logging yang lebih informatif
+    console.error('Error saat meneruskan webhook ke VPS:', error.message);
+    if (error.response) {
+      console.error('VPS response status:', error.response.status);
+      console.error('VPS response data:', JSON.stringify(error.response.data).slice(0, 1000));
     }
+    console.error(error.stack);
 
-    try {
-        const payload = request.body;
-        
-        console.log('--- Webhook Diterima dari Pakasir ---');
-        console.log('Payload Lengkap:', payload);
-        
-        // --- 1. Meneruskan Payload ke VPS ---
-        // Vercel mengirim POST ke VPS Anda
-        await axios.post(VPS_INTERNAL_WEBHOOK_URL, payload, {
-            headers: { 'Authorization': `Bearer ${PAKASIR_FORWARD_SECRET}` } 
-        });
-
-        // 2. Berikan Respon Sukses (Status 200) ke Pakasir
-        return response.status(200).json({ 
-            success: true, 
-            message: 'Webhook diterima dan diteruskan ke bot VPS dengan sukses.' 
-        });
-
-    } catch (error) {
-        console.error('Error saat meneruskan webhook ke VPS:', error);
-        // Jika VPS error, kita tetap kirim 200 OK ke Pakasir agar mereka tidak mengulanginya terus menerus.
-        return response.status(200).json({ 
-            success: false, 
-            message: 'Webhook diterima, namun gagal diteruskan. Cek log Vercel dan VPS.' 
-        });
-    }
-}
+    // tetap kirim 200 ke pakasir (sesuai design kamu)
+    return response.status(200).json({
+      success: false,
+      message: 'Webhook diterima, namun gagal diteruskan. Cek log Vercel dan VPS.'
+    });
+  }
+};
