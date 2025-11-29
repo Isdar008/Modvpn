@@ -1,13 +1,8 @@
 // File: api/webhook/pakasir.js
 
-import axios from 'axios';
-
-// Ganti dengan IP Public VPS Anda dan PORT Express (50123)
-// Pastikan Anda juga memasukkan Secret Key yang sama persis di sini!
-const VPS_INTERNAL_WEBHOOK_URL = 'http://41.216.178.185:50123/webhook/pakasir';
-const PAKASIR_FORWARD_SECRET = "joytun0018272727Shdha"; // <--- HARUS SAMA DENGAN DI app.js
-
+// Ini adalah fungsi handler utama untuk Vercel Serverless Function
 export default async function handler(request, response) {
+    // Webhook biasanya menggunakan metode POST untuk mengirim data
     if (request.method !== 'POST') {
         return response.status(405).json({ 
             success: false, 
@@ -18,27 +13,23 @@ export default async function handler(request, response) {
     try {
         const payload = request.body;
         
-        console.log('--- Webhook Diterima dari Pakasir ---');
+        // Cek apakah data dari webhook terkirim
+        console.log('--- Webhook Diterima ---');
         console.log('Payload Lengkap:', payload);
         
-        // --- 1. Meneruskan Payload ke VPS ---
-        // Vercel mengirim POST ke VPS Anda
-        await axios.post(VPS_INTERNAL_WEBHOOK_URL, payload, {
-            headers: { 'Authorization': `Bearer ${PAKASIR_FORWARD_SECRET}` } 
-        });
-
-        // 2. Berikan Respon Sukses (Status 200) ke Pakasir
+        // Logika bisnis Anda (misalnya menyimpan ke database)
+        
+        // Berikan Respon Sukses (Status 200)
         return response.status(200).json({ 
             success: true, 
-            message: 'Webhook diterima dan diteruskan ke bot VPS dengan sukses.' 
+            message: 'Webhook diterima dan diproses dengan sukses.' 
         });
 
     } catch (error) {
-        console.error('Error saat meneruskan webhook ke VPS:', error);
-        // Jika VPS error, kita tetap kirim 200 OK ke Pakasir agar mereka tidak mengulanginya terus menerus.
-        return response.status(200).json({ 
+        console.error('Error saat memproses webhook:', error);
+        return response.status(500).json({ 
             success: false, 
-            message: 'Webhook diterima, namun gagal diteruskan. Cek log Vercel dan VPS.' 
+            message: 'Terjadi error internal saat memproses webhook.' 
         });
     }
-}
+            }
