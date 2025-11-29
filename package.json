@@ -3,19 +3,12 @@
   "version": "1.0.0",
   "description": "Dependencies for Vercel Serverless Function.",
   "main": "api/webhook/pakasir.js",
-
-  "type": "module",
-
-  "engines": {
-    "node": "24.x"
-  },
-
   "scripts": {
     "start": "node api/webhook/pakasir.js"
   },
-
   "dependencies": {
     "axios": "^1.13.1",
+    "crypto": "^1.0.1",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "node-cron": "^4.2.1",
