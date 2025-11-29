@@ -1,31 +1,35 @@
-import axios from 'axios';
+// File: api/webhook/pakasir.js
 
-export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ success: false, message: 'Only POST allowed.' });
+// Ini adalah fungsi handler utama untuk Vercel Serverless Function
+export default async function handler(request, response) {
+    // Webhook biasanya menggunakan metode POST untuk mengirim data
+    if (request.method !== 'POST') {
+        return response.status(405).json({ 
+            success: false, 
+            message: 'Metode tidak diizinkan. Hanya POST yang diterima.' 
+        });
     }
 
     try {
-        const payload = req.body;
-
-        // Teruskan webhook ke VPS bot (ganti IP milik lo)
-        const forward = await axios.post(
-            '41.216.178.185:50123/app/webhook/pakasir',
-            payload,
-            { timeout: 5000 }
-        );
-
-        return res.status(200).json({
-            success: true,
-            message: 'Webhook diterima & diteruskan ke bot.',
-            forward: forward.data
+        const payload = request.body;
+        
+        // Cek apakah data dari webhook terkirim
+        console.log('--- Webhook Diterima ---');
+        console.log('Payload Lengkap:', payload);
+        
+        // Logika bisnis Anda (misalnya menyimpan ke database)
+        
+        // Berikan Respon Sukses (Status 200)
+        return response.status(200).json({ 
+            success: true, 
+            message: 'Webhook diterima dan diproses dengan sukses.' 
         });
 
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({
-            success: false,
-            message: 'Gagal meneruskan webhook ke VPS.'
+    } catch (error) {
+        console.error('Error saat memproses webhook:', error);
+        return response.status(500).json({ 
+            success: false, 
+            message: 'Terjadi error internal saat memproses webhook.' 
         });
     }
 }
