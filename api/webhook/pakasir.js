@@ -1,6 +1,6 @@
 // File: api/webhook/pakasir.js (Vercel)
 
-const VPS_INTERNAL_WEBHOOK_URL = 'http://160.19.167.112:50123/webhook/pakasir'; // IP & port VPS kamu
+const VPS_INTERNAL_WEBHOOK_URL = 'http://41.216.178.185:50123/webhook/pakasir'; // IP & port VPS kamu
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
