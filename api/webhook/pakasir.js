@@ -1,35 +1,29 @@
-// File: api/webhook/pakasir.js
+// File: api/webhook/pakasir.js (di Vercel)
+import axios from 'axios';
 
-// Ini adalah fungsi handler utama untuk Vercel Serverless Function
-export default async function handler(request, response) {
-    // Webhook biasanya menggunakan metode POST untuk mengirim data
-    if (request.method !== 'POST') {
-        return response.status(405).json({ 
-            success: false, 
-            message: 'Metode tidak diizinkan. Hanya POST yang diterima.' 
-        });
-    }
+const VPS_INTERNAL_WEBHOOK_URL = 'http://41.216.178.185:50123/webhook/pakasir'; // GANTI IP!
 
-    try {
-        const payload = request.body;
-        
-        // Cek apakah data dari webhook terkirim
-        console.log('--- Webhook Diterima ---');
-        console.log('Payload Lengkap:', payload);
-        
-        // Logika bisnis Anda (misalnya menyimpan ke database)
-        
-        // Berikan Respon Sukses (Status 200)
-        return response.status(200).json({ 
-            success: true, 
-            message: 'Webhook diterima dan diproses dengan sukses.' 
-        });
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res
+      .status(405)
+      .json({ success: false, message: 'Only POST allowed' });
+  }
 
-    } catch (error) {
-        console.error('Error saat memproses webhook:', error);
-        return response.status(500).json({ 
-            success: false, 
-            message: 'Terjadi error internal saat memproses webhook.' 
-        });
-    }
+  try {
+    const payload = req.body;
+
+    // forward payload ke VPS (Express app.post('/webhook/pakasir', ...))
+    await axios.post(VPS_INTERNAL_WEBHOOK_URL, payload, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 10000
+    });
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.error('Forward Pakasir → VPS gagal:', err.message || err);
+    return res
+      .status(500)
+      .json({ success: false, message: 'Failed to forward to VPS' });
+  }
 }
